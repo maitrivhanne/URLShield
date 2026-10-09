@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="URLShield screens website URLs for common phishing warning signs.">
+  <title>URLShield | URL Phishing Scanner</title>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-icon">U</span>
+      <span>URL<span class="brand-light">Shield</span></span>
+    </a>
+    <nav class="header-label"><span class="live-dot"></span> URL SECURITY CHECK
+    {% if user %}<a href="{{ url_for('history') }}">History</a><form class="inline-form" action="{{ url_for('logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><button type="submit">Log out</button></form><span>{{ user.email }}</span>{% else %}<a href="{{ url_for('login') }}">Log in</a><a href="{{ url_for('register') }}">Create account</a>{% endif %}
+  </nav>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">✳ &nbsp; BROWSE WITH MORE CONFIDENCE</div>
+      <h1>One link can change<br><span>everything.</span></h1>
+      <p class="hero-copy">
+        Check a URL for common phishing warning signs before you click.
+        Understand the risk and make more informed browsing decisions.
+      </p>
+
+      <section class="scanner-card">
+        <div class="card-heading">
+          <div class="card-symbol">⌕</div>
+          <div>
+            <h2>Scan a URL</h2>
+            <p>Enter a website address to inspect its URL patterns.</p>
+          </div>
+        </div>
+
+        <form action="/scan" method="post" id="scan-form">
+          <label for="url">WEBSITE URL</label>
+          <div class="url-input-wrap">
+            <span class="input-symbol">↗</span>
+            <input
+              type="text"
+              id="url"
+              name="url"
+              placeholder="https://example.com"
+              value="{{ submitted_url|default('') }}"
+              maxlength="2048"
+              autocomplete="url"
+              spellcheck="false"
+              required
+            >
+          </div>
+          <button class="scan-button" id="scan-button" type="submit">
+            Scan URL <span aria-hidden="true">→</span>
+          </button>
+          <p class="privacy-note">Your submitted URL is analysed by local rules. The website is not opened. {% if not user %}Basic results are public; log in for score, severity and history.{% endif %}</p>
+        </form>
+
+        {% if error %}
+        <div class="error-box" role="alert">
+          <strong>Unable to scan this URL</strong>
+          <p>{{ error }}</p>
+        </div>
+        {% endif %}
+      </section>
+
+      {% if result %}
+      <section class="result-card severity-{{ result.severity|lower }}" aria-live="polite">
+        <div class="result-top">
+          <div>
+            <p class="result-kicker">SCAN RESULT</p>
+            <h2>{{ result.verdict }}</h2>
+            <p class="scanned-url">{{ result.url }}</p>
+          </div>
+          {% if user %}<div class="risk-score"><span class="score-number">{{ result.score }}</span><span class="score-caption">RISK SCORE / 100</span></div>{% else %}<div class="risk-score"><span class="score-number">🔒</span><span class="score-caption"><a href="{{ url_for('login') }}">Log in to see score</a></span></div>{% endif %}
+        </div>
+
+        <div class="severity-row">
+          {% if user %}<span class="severity-pill">{{ result.severity }} risk</span>{% else %}<span class="severity-pill">Risk level available after login</span>{% endif %}
+          <span class="confidence">{{ result.evidence }}</span>
+        </div>
+
+        {% if user %}<div
+          class="score-track"
+          role="img"
+          aria-label="Rule-based risk score {{ result.score }} out of 100"
+        >
+          <div class="score-fill" style="--score-width: {{ result.score }}%;"></div>
+        </div>{% endif %}
+
+        <div class="result-section">
+          <h3>What we noticed</h3>
+          <ul class="reason-list">
+            {% for reason in result.reasons %}
+            <li>
+              <span class="reason-dot">•</span>
+              <span>{{ reason }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="harm-box">
+          <h3>Potential harm and recommended action</h3>
+          <p>{{ result.harm }}</p>
+        </div>
+
+        <p class="disclaimer">
+          This result uses basic URL-pattern rules. It is not a verified
+          reputation check or a calibrated probability. A low score does not
+          guarantee that a website is safe.
+        </p>
+        <button type="button" class="scan-again" id="scan-again">
+          Scan another URL
+        </button>
+      </section>
+      {% endif %}
+
+      <div class="example-row">
+        <span>TRY AN EXAMPLE</span>
+        <button type="button" class="example-chip" data-url="https://www.wikipedia.org">
+          Wikipedia example
+        </button>
+        <button type="button" class="example-chip" data-url="http://secure-login-account.example.com/verify">
+          Suspicious pattern
+        </button>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="section-heading">
+        <span class="eyebrow">THE URLSHIELD APPROACH</span>
+        <h2>Know what you're looking at.</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature">
+          <span class="feature-icon">⌕</span>
+          <h3>Pattern analysis</h3>
+          <p>Checks for unusual domains, embedded credentials, and suspicious terms.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon">◈</span>
+          <h3>Clear risk level</h3>
+          <p>Displays a risk indicator and explains which patterns contributed to it.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon">✓</span>
+          <h3>Safer decisions</h3>
+          <p>Provides practical guidance without claiming a link is guaranteed safe.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="safety-banner">
+      <span class="safety-icon">!</span>
+      <p><strong>Stay alert.</strong> Never share passwords, OTPs, or banking details through a link you don't trust.</p>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/">URL<span class="brand-light">Shield</span></a>
+    <p>Built for safer browsing. Scan smart. Stay alert.</p>
+    <p class="footer-small">Educational URL screening tool · No guarantee of website safety</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "URLShield - Phishing URL Scanner",
+  "short_name": "URLShield",
+  "description": "Check URLs for common phishing warning signs.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101827",
+  "theme_color": "#101827",
+  "icons": [{"src":"/static/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
